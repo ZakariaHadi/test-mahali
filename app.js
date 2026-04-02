@@ -23,16 +23,81 @@ app.get('/', (req, res) => {
   }
 });
 
-// NEW: OAuth callback route
+// NEW: Serve login HTML
+app.get('/login', (req, res) => {
+  res.status(200).send(`
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Facebook Login</title>
+</head>
+<body>
+
+<script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js"></script>
+
+<script>
+  // SDK initialization
+  window.fbAsyncInit = function() {
+    FB.init({
+      appId: '1501995184785313',
+      autoLogAppEvents: true,
+      xfbml: true,
+      version: 'v25.0'
+    });
+  };
+
+  // Session logging message event listener
+  window.addEventListener('message', (event) => {
+    if (!event.origin.endsWith('facebook.com')) return;
+    try {
+      const data = JSON.parse(event.data);
+      if (data.type === 'WA_EMBEDDED_SIGNUP') {
+        console.log('message event: ', data);
+      }
+    } catch {
+      console.log('message event: ', event.data);
+    }
+  });
+
+  // Response callback
+  const fbLoginCallback = (response) => {
+    if (response.authResponse) {
+      const code = response.authResponse.code;
+      console.log('response: ', code);
+    } else {
+      console.log('response: ', response);
+    }
+  }
+
+  // Launch method
+  const launchWhatsAppSignup = () => {
+    FB.login(fbLoginCallback, {
+      config_id: '1273333247500719',
+      response_type: 'code',
+      override_default_response_type: true,
+      extras: {
+        setup: {},
+      }
+    });
+  }
+</script>
+
+<!-- Launch button -->
+<button onclick="launchWhatsAppSignup()" 
+  style="background-color: #1877f2; border: 0; border-radius: 4px; color: #fff; cursor: pointer; font-family: Helvetica, Arial, sans-serif; font-size: 16px; font-weight: bold; height: 40px; padding: 0 24px;">
+  Login with whatsapp
+</button>
+
+</body>
+</html>
+  `);
+});
+
+// OAuth callback route
 app.get('/api/oauth/callback', (req, res) => {
   console.log('\nOAuth callback received');
-
-  // Log all query params
   console.log('Query params:', JSON.stringify(req.query, null, 2));
-
-  // Optionally log headers/body if needed
-  // console.log('Headers:', req.headers);
-
+  console.log('Headers:', req.headers);
   res.status(200).json({
     success: true,
     message: 'OAuth callback received'
