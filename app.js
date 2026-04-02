@@ -11,7 +11,7 @@ app.use(express.json());
 const port = process.env.PORT || 3000;
 const verifyToken = process.env.VERIFY_TOKEN;
 
-// Route for GET requests
+// Route for GET requests (Webhook verification)
 app.get('/', (req, res) => {
   const { 'hub.mode': mode, 'hub.challenge': challenge, 'hub.verify_token': token } = req.query;
 
@@ -23,7 +23,23 @@ app.get('/', (req, res) => {
   }
 });
 
-// Route for POST requests
+// NEW: OAuth callback route
+app.get('/api/oauth/callback', (req, res) => {
+  console.log('\nOAuth callback received');
+
+  // Log all query params
+  console.log('Query params:', JSON.stringify(req.query, null, 2));
+
+  // Optionally log headers/body if needed
+  // console.log('Headers:', req.headers);
+
+  res.status(200).json({
+    success: true,
+    message: 'OAuth callback received'
+  });
+});
+
+// Route for POST requests (Webhook events)
 app.post('/', (req, res) => {
   const timestamp = new Date().toISOString().replace('T', ' ').slice(0, 19);
   console.log(`\n\nWebhook received ${timestamp}\n`);
