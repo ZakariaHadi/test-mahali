@@ -25,6 +25,7 @@ app.get('/', (req, res) => {
 
 // NEW: Serve login HTML
 app.get('/login', (req, res) => {
+  console.log("arrived")
   res.status(200).send(`
 <!DOCTYPE html>
 <html>
